@@ -1,0 +1,33 @@
+package srp_project;
+
+import srp_project.SRP_6a;
+import java.math.BigInteger;
+import java.util.HashMap;
+import java.util.Random;
+
+public class SRPServer {
+	SRPServer(String SRP_id, SRPAccount srp_account){new SRP_6a();srp_accounts.put(SRP_id, srp_account);}
+	public HashMap<String, SRPAccount> srp_accounts = new HashMap<String, SRPAccount>();
+	void SRP_Receiver(String srp_userId, long bigA) {srp_accounts.get(srp_userId).setBigA(bigA);}
+	void generateIntB(String srp_userId) {
+		int B = SRP_random(); srp_accounts.get(srp_userId).setB(B); long SRP_PV = srp_accounts.get(srp_userId).getPasswordVerify();
+		long bigB = (SRP_6a.getLongK() * SRP_PV + SRP_6a.powMod(SRP_6a.getLongG(), B, SRP_6a.getLongN())) % SRP_6a.getLongN();
+		srp_accounts.get(srp_userId).setBigB(bigB);
+	}
+	void computeK(String srp_userId) {
+		BigInteger srp_S; SRPAccount srp_account = srp_accounts.get(srp_userId);
+		BigInteger srp_U = new BigInteger(srp_account.getU(), 16); long bigA = srp_account.getBigA();
+		long B = srp_account.getB(); long V = srp_account.getPasswordVerify();
+		srp_S = BigInteger.valueOf(V).modPow(srp_U, BigInteger.valueOf(SRP_6a.getLongN())).multiply(BigInteger.valueOf(bigA).modPow(BigInteger.valueOf(B), BigInteger.valueOf(SRP_6a.getLongN())));
+		srp_account.setK(SRP_6a.getHash(srp_S.toString().getBytes()));
+	}
+	void confirmHash(String srp_userId) {
+		SRPAccount srp_account = srp_accounts.get(srp_userId);
+		BigInteger EX1 = new BigInteger(SRP_6a.getHash(Long.valueOf(SRP_6a.getLongN()).toString().getBytes()), 16);
+		BigInteger EX2 = new BigInteger(SRP_6a.getHash(Long.valueOf(SRP_6a.getLongG()).toString().getBytes()), 16);
+		srp_account.setM(SRP_6a.getHash((EX1.xor(EX2).toString() + SRP_6a.getHash(srp_userId.getBytes())+srp_account.getSrp_user_salt() + srp_account.getBigA() + srp_account.getBigB() + srp_account.getK()).getBytes()));
+	}
+	void computeR(String srp_userId) {SRPAccount srp_account = srp_accounts.get(srp_userId); srp_account.setR(SRP_6a.getHash((srp_account.getBigA()+srp_account.getM()+srp_account.getK()).getBytes()));}
+	String SRP_scramble(String srp_userId) {long SRP_A = srp_accounts.get(srp_userId).getBigA(); long SRP_B = srp_accounts.get(srp_userId).getBigB(); String SRP_connection = SRP_A + String.valueOf(SRP_B);
+		String U = SRP_6a.getHash(SRP_connection.getBytes());srp_accounts.get(srp_userId).setU(U); return U;}	
+	private static int SRP_random() {Random SRP_rand = new Random(System.currentTimeMillis()); return SRP_rand.nextInt(1050000-10000) + 10000;}}

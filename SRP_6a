@@ -1,0 +1,45 @@
+package srp_project;
+
+import java.util.ArrayList;
+import java.util.Random;
+import java.io.UnsupportedEncodingException;
+import java.security.NoSuchAlgorithmException;
+import java.security.MessageDigest;
+import javax.xml.bind.DatatypeConverter;
+import java.math.BigInteger;
+import static java.lang.Math.sqrt;
+
+public class SRP_6a {
+	private static long N;
+	private static long fi;
+	private static long G;
+	private static final int K = 3;
+	public SRP_6a( ){N = 212501*2+1; fi = N - 1; G = SRPRoot(numFactor());}
+	public static long getLongN() {return N;}
+	public static long getLongK() {return K;}
+	public static long getLongG() {return G;}
+	private boolean prime(int n) {for(int i = 2; i <= sqrt(n); i++) {if(n % i == 0) {return false;}}return true;}
+
+	private int SRPRandom() {int A = 10000; int B = 1050000; int i;
+		Random SRPRand = new Random(System.currentTimeMillis()); int SRPResult = SRPRand.nextInt(B-A)+A;
+		for(i = SRPResult; i < 2 * SRPResult; i++) {if(prime(i) && prime((i-1)/2)) {return i;}}return i;}
+	public static String getHash (byte[] inputSRP) {String SRPHashValue = "";
+		try {MessageDigest msgDigest = MessageDigest.getInstance("MD5"); byte[] SRPDigestBytes = msgDigest.digest(inputSRP);
+			SRPHashValue = DatatypeConverter.printHexBinary(SRPDigestBytes).toLowerCase();}
+		catch(NoSuchAlgorithmException except) {except.printStackTrace();}return SRPHashValue;}
+	private ArrayList numFactor(){
+		ArrayList factor = new ArrayList();long numOne = fi; while(numOne % 2 == 0) {numOne /= 2; factor.add(2L);}
+		for(int i = 3; i*i <= numOne; i += 2) {if(numOne % i == 0) {numOne /= i; factor.add((long) i); i -= 2;}}
+		if(numOne != 1) {factor.add(numOne);}System.out.println(factor); return factor;}
+	private static long SRPRoot(ArrayList factor) {Integer g;
+		for(g = 1; g <= fi + 1; g++) {boolean srp_check = true;
+			for(long aFactor : factor) {long A = powMod(g, fi / aFactor, fi + 1); srp_check &= A != 1;
+			}if(srp_check) {return g;}}return 0;}
+	public static long powMod (long SRPBase, long SRPExponent, long SRPModulus) {
+		long D = 1;
+		while(SRPExponent > 1) {
+			if(SRPExponent % 2 == 0) {SRPBase = SRPBase * SRPBase % SRPModulus; SRPExponent /= 2;}
+			else{SRPExponent -= 1; D = D * SRPBase % SRPModulus;}}
+		return D * SRPBase % SRPModulus;}
+}
+ 

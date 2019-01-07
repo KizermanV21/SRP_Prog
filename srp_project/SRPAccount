@@ -1,0 +1,16 @@
+package srp_project;
+
+public class SRPAccount {
+	private String srp_user_salt; private long passwordVerify;
+	private String K, M, U, R;
+	private long bigA, bigB; private long B;
+	public SRPAccount(long passwordVerify, String Salt) {srp_user_salt = Salt;this.passwordVerify = passwordVerify;}
+	public String getSrp_user_salt() {return srp_user_salt;} public long getPasswordVerify() {return passwordVerify;}
+	public void setB(long B) {this.B = B;} public long getB() {return B;}
+	public void setBigA(Long bigA) {this.bigA = bigA;} public long getBigA() {return bigA;}
+	public void setBigB(Long bigB) {this.bigB = bigB;} public long getBigB() {return bigB;}
+	public void setK(String K) {this.K = K;} public String getK() {return K;}
+	public void setM(String M) {this.M = M;} public String getM() {return M;}
+	public void setU(String U) {this.U = U;} public String getU() {return U;}
+	public void setR(String R) {this.R = R;} public String getR() {return R;}
+}

@@ -1,0 +1,42 @@
+package srp_project;
+
+import java.math.BigInteger;
+import java.util.Random;
+import java.util.UUID;
+
+public class SRPClient {
+	private String Salt; private BigInteger X;
+	private long passwordVerify; private String password;
+	private String SRP_id; private long A;
+	private String M, U, R; public String K;
+	private long bigA, bigB;
+	SRPClient(String SRP_id, String password){
+		new SRP_6a();
+		this.password = password;
+		this.SRP_id = SRP_id;
+		Salt = UUID.randomUUID().toString();
+		String SRPHash = SRP_6a.getHash((Salt + this.password).getBytes());
+		X = new BigInteger(SRPHash, 16);
+		System.out.println(X);
+		passwordVerify = Long.valueOf(BigInteger.valueOf(SRP_6a.getLongG()).modPow(X, BigInteger.valueOf(SRP_6a.getLongN())).toString());
+	}
+	public String GetStringM() {return M;} public String GetStringSalt() {return Salt;} public String GetStringSRR_id() {return SRP_id;}
+	void computeK() {BigInteger srp_S; BigInteger SRP_U = new BigInteger(U, 16); long srp_EX1 = bigB - SRP_6a.getLongK() * passwordVerify; BigInteger srp_EX2 = SRP_U.multiply(X).add(BigInteger.valueOf(A));
+		srp_S = BigInteger.valueOf(srp_EX1).modPow(srp_EX2, BigInteger.valueOf(SRP_6a.getLongN())); K =SRP_6a.getHash(srp_S.toString().getBytes());}
+	String confirmHash() {
+		BigInteger EX1 = new BigInteger(SRP_6a.getHash(Long.valueOf(SRP_6a.getLongN()).toString().getBytes()), 16);
+		BigInteger EX2 = new BigInteger(SRP_6a.getHash(Long.valueOf(SRP_6a.getLongG()).toString().getBytes()), 16);
+		M = SRP_6a.getHash((EX1.xor(EX2).toString() + SRP_6a.getHash(SRP_id.getBytes())+Salt + bigA + bigB + K).getBytes());
+		return M;
+	}
+	String computeR(){R = SRP_6a.getHash((bigA + M + K).getBytes()); return R;} String getR(){return R;}
+	private int SRP_random() {Random SRP_rand = new Random(System.currentTimeMillis()); return SRP_rand.nextInt(1050000-10000) + 10000;}
+	long computeA() {A = SRP_random(); bigA = SRP_6a.powMod(SRP_6a.getLongG(), A, SRP_6a.getLongN()); return bigA;}
+	String SRP_scramble() {
+		long SRP_A = bigA; long SRP_B = bigB;
+		String SRP_connection = SRP_A + String.valueOf(SRP_B);
+		String U = SRP_6a.getHash(SRP_connection.getBytes());
+		this.U = U; return U;
+	}
+	public long getPasswordVerify() {return passwordVerify;} public void setBigB() {this.bigB = bigB;}
+}

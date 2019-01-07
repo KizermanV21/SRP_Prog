@@ -1,0 +1,20 @@
+package srp_project;
+import java.math.BigInteger;
+import java.security.SecureRandom;
+
+public class RSAAlgor {
+	private static BigInteger N; private BigInteger D; private BigInteger E; 
+	static long rand; private int Length; public RSAAlgor(int len) {
+		Length = len; SecureRandom rand = new SecureRandom();
+		BigInteger p = new BigInteger(Length/2, 100, rand);
+		BigInteger q = new BigInteger(Length/2, 100, rand);
+		N = p.multiply(q); //compute N = PQ
+		BigInteger M = (p.subtract(BigInteger.ONE)).multiply(q.subtract(BigInteger.ONE)); //compute additional M = (P-1)(Q-1)
+		E = new BigInteger("3"); while (M.gcd(E).intValue() > 1) {E = E.add(new BigInteger("2"));} D = E.modInverse(M);
+	}
+	public void keySet (BigInteger newIntN, BigInteger newIntE) {N = newIntN; E = newIntE;}
+	public synchronized BigInteger encrypt(BigInteger msg) {return msg.modPow(E, N);}
+	public synchronized BigInteger decrypt(BigInteger msg) {return msg.modPow(D, N);}
+	public synchronized static BigInteger getIntN() {return N;}
+	public synchronized BigInteger getIntE() {return E;}
+}
